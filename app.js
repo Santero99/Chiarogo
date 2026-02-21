@@ -1,6 +1,6 @@
 // ChiaraGo - Core Application
-const SUPABASE_URL = 'https://SEU_PROJETO.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANONIMA';
+const SUPABASE_URL = 'https://lspmunocifmqlcauhfqw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ALXpCiVeE91odoJ_Pp-PoQ_g2rgQweC';
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
