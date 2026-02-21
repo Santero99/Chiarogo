@@ -1,0 +1,2 @@
+# Chiarogo
+Conversas com ideias 
