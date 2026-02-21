@@ -1,0 +1,23 @@
+{
+  "name": "ChiaraGo",
+  "short_name": "ChiaraGo",
+  "description": "Rede social de mensagens ChiaraGo",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a1a",
+  "theme_color": "#7c3aed",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Chat", "url": "/chat.html", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Contatos", "url": "/contatos.html", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] }
+  ],
+  "categories": ["social", "communication"]
+}

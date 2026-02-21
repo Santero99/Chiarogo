@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Status - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--online:#22c55e;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;padding-bottom:80px;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;text-decoration:none;display:flex;border-radius:8px;}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;flex:1;}
+  .my-status{margin:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;}
+  .status-avatar-wrap{position:relative;cursor:pointer;}
+  .status-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:22px;overflow:hidden;}
+  .status-avatar img{width:100%;height:100%;object-fit:cover;}
+  .status-ring{position:absolute;inset:-3px;border-radius:50%;border:3px solid var(--primary);animation:spin 3s linear infinite;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .add-status-btn{position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;border:2px solid var(--bg);cursor:pointer;}
+  .my-status-info{flex:1;}
+  .my-status-title{font-weight:600;font-size:15px;}
+  .my-status-sub{font-size:13px;color:var(--text3);margin-top:2px;}
+  .section-header{padding:12px 16px 6px;color:var(--text3);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+  .status-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03);}
+  .status-item:hover{background:var(--surface);}
+  .status-ring-container{position:relative;width:52px;height:52px;flex-shrink:0;}
+  .status-ring-svg{position:absolute;inset:0;width:100%;height:100%;}
+  .status-thumb{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;overflow:hidden;position:absolute;top:4px;left:4px;}
+  .status-thumb img{width:100%;height:100%;object-fit:cover;}
+  .status-info{flex:1;}
+  .status-name{font-weight:600;font-size:15px;}
+  .status-time{font-size:12px;color:var(--text3);margin-top:2px;}
+  .status-count{font-size:12px;color:var(--primary-light);font-weight:600;}
+  /* Status viewer */
+  .viewer{position:fixed;inset:0;background:#000;z-index:300;display:none;flex-direction:column;}
+  .viewer.open{display:flex;}
+  .viewer-progress{display:flex;gap:3px;padding:max(12px,env(safe-area-inset-top)) 12px 8px;position:absolute;top:0;left:0;right:0;z-index:1;}
+  .progress-bar{flex:1;height:2px;background:rgba(255,255,255,.3);border-radius:1px;overflow:hidden;}
+  .progress-fill{height:100%;background:#fff;width:0;transition:width linear;}
+  .viewer-header{padding:max(40px,env(safe-area-inset-top)) 12px 8px;display:flex;align-items:center;gap:10px;position:absolute;top:0;left:0;right:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);}
+  .viewer-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .viewer-avatar img{width:100%;height:100%;object-fit:cover;}
+  .viewer-name{font-weight:600;flex:1;}
+  .viewer-time{font-size:12px;color:rgba(255,255,255,.6);}
+  .viewer-close{color:#fff;cursor:pointer;font-size:22px;line-height:1;}
+  .viewer-media{flex:1;display:flex;align-items:center;justify-content:center;position:relative;}
+  .viewer-img{max-width:100%;max-height:100%;object-fit:contain;}
+  .viewer-text-content{padding:24px;text-align:center;font-size:22px;font-weight:600;color:#fff;max-width:400px;}
+  .viewer-footer{padding:16px 16px max(16px,env(safe-area-inset-bottom));display:flex;gap:10px;position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);}
+  .reply-input{flex:1;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:var(--radius-full);padding:10px 16px;color:#fff;font-family:var(--font-body);font-size:14px;outline:none;}
+  .reply-input::placeholder{color:rgba(255,255,255,.5);}
+  .emoji-react{font-size:24px;cursor:pointer;transition:transform .15s;}
+  .emoji-react:hover{transform:scale(1.3);}
+  /* Add status modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;}
+  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+  .modal h3{font-family:var(--font-head);font-size:18px;margin-bottom:16px;}
+  .status-option{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;cursor:pointer;transition:background .15s;}
+  .status-option:hover{background:var(--border);}
+  .opt-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;color:var(--text3);text-decoration:none;transition:color .2s;}
+  .nav-item.active{color:var(--primary-light);}
+  .nav-item svg{width:24px;height:24px;}
+  .nav-item span{font-size:10px;font-weight:500;}
+  input[type=file]{display:none;}
+  textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;resize:none;margin-bottom:12px;min-height:100px;}
+  textarea:focus{border-color:var(--primary);}
+  .btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:var(--radius-full);color:#fff;font-family:var(--font-head);font-size:14px;font-weight:700;cursor:pointer;}
+  .btn:disabled{opacity:.4;cursor:default;}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="index.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title">Status</div>
+</header>
+
+<div class="my-status" onclick="showAddOptions()">
+  <div class="status-avatar-wrap">
+    <div class="status-avatar" id="myStatusAvatar">?</div>
+    <div class="add-status-btn">+</div>
+  </div>
+  <div class="my-status-info">
+    <div class="my-status-title">Meu Status</div>
+    <div class="my-status-sub" id="myStatusSub">Toque para adicionar um status</div>
+  </div>
+</div>
+
+<div class="section-header">Atualizações Recentes</div>
+<div id="statusList">
+  <div style="text-align:center;padding:40px;opacity:.4;font-size:14px;color:var(--text3)">Carregando...</div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span>Chats</span></a>
+  <a href="status.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg><span>Status</span></a>
+  <a href="contatos.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Contatos</span></a>
+  <a href="notificacoes.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span>Alertas</span></a>
+  <a href="configuracoes.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg><span>Config.</span></a>
+</nav>
+
+<!-- Add Status Options -->
+<div class="modal-overlay" id="addModal" onclick="closeAddModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Novo Status</h3>
+    <div class="status-option" onclick="triggerPhotoStatus()">
+      <div class="opt-icon" style="background:rgba(124,58,237,.2)">📷</div>
+      <div><div style="font-weight:600">Foto ou Vídeo</div><div style="font-size:12px;color:var(--text3)">Compartilhe um momento</div></div>
+    </div>
+    <div class="status-option" onclick="showTextStatus()">
+      <div class="opt-icon" style="background:rgba(244,114,182,.2)">✍️</div>
+      <div><div style="font-weight:600">Texto</div><div style="font-size:12px;color:var(--text3)">Escreva algo para seus contatos</div></div>
+    </div>
+    <div id="textStatusForm" style="display:none;margin-top:12px;">
+      <textarea id="statusText" placeholder="O que está acontecendo?..." maxlength="700"></textarea>
+      <button class="btn" onclick="publishTextStatus()">Publicar Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Viewer -->
+<div class="viewer" id="statusViewer">
+  <div class="viewer-progress" id="viewerProgress"></div>
+  <div class="viewer-header">
+    <div class="viewer-avatar" id="viewerAvatar"></div>
+    <div class="viewer-name" id="viewerName"></div>
+    <div class="viewer-time" id="viewerTime"></div>
+    <span class="viewer-close" onclick="closeViewer()">✕</span>
+  </div>
+  <div class="viewer-media" id="viewerMedia" onclick="nextStatus()"></div>
+  <div class="viewer-footer">
+    <input class="reply-input" placeholder="Responder ao status..." id="replyInput">
+    <span class="emoji-react" onclick="reactStatus('❤️')">❤️</span>
+    <span class="emoji-react" onclick="reactStatus('😂')">😂</span>
+    <span class="emoji-react" onclick="reactStatus('😮')">😮</span>
+  </div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*,video/*" onchange="uploadPhotoStatus(this)">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+let currentStatuses = [], currentIdx = 0, viewInterval = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  const p = App.currentProfile;
+  const av = document.getElementById('myStatusAvatar');
+  if (p?.avatar_url) av.innerHTML = `<img src="${p.avatar_url}">`;
+  else av.textContent = (p?.full_name||'?')[0];
+  await loadStatuses();
+});
+
+async function loadStatuses() {
+  const twentyFourHoursAgo = new Date(Date.now() - 24*60*60*1000).toISOString();
+  const { data: contacts } = await window.supabaseClient.from('contacts').select('contact_id').eq('user_id', App.currentUser.id);
+  const contactIds = (contacts||[]).map(c => c.contact_id);
+  contactIds.push(App.currentUser.id);
+
+  const { data: statuses } = await window.supabaseClient
+    .from('statuses')
+    .select('*, profiles(id,full_name,username,avatar_url)')
+    .in('user_id', contactIds)
+    .gte('created_at', twentyFourHoursAgo)
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('statusList');
+  if (!statuses || !statuses.length) {
+    list.innerHTML = `<div style="text-align:center;padding:60px 24px;opacity:.4;"><div style="font-size:48px">👀</div><div style="font-size:14px;color:var(--text3);margin-top:8px">Nenhum status recente</div></div>`;
+    return;
+  }
+
+  // Group by user
+  const grouped = {};
+  statuses.forEach(s => {
+    if (!grouped[s.user_id]) grouped[s.user_id] = { profile: s.profiles, items: [] };
+    grouped[s.user_id].items.push(s);
+  });
+
+  // Check own status
+  if (grouped[App.currentUser.id]) {
+    document.getElementById('myStatusSub').textContent = `${grouped[App.currentUser.id].items.length} atualização(ões) · ${App.formatTime(grouped[App.currentUser.id].items[0].created_at)}`;
+  }
+
+  list.innerHTML = '';
+  Object.entries(grouped).forEach(([userId, { profile: p, items }]) => {
+    if (userId === App.currentUser.id) return;
+    const div = document.createElement('div');
+    div.className = 'status-item';
+    div.onclick = () => openViewer(p, items);
+    const totalDegree = 360;
+    const gap = 4;
+    const perItem = (totalDegree - items.length * gap) / items.length;
+    div.innerHTML = `
+      <div class="status-ring-container">
+        <svg class="status-ring-svg" viewBox="0 0 52 52">
+          ${items.map((_, i) => {
+            const start = i * (perItem + gap);
+            const dashArray = `${perItem * 44 / 360} ${44 * Math.PI - perItem * 44 / 360}`;
+            return `<circle cx="26" cy="26" r="22" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-dasharray="${Math.PI*perItem/5} 999" stroke-dashoffset="${-Math.PI*start/5}" transform="rotate(-90 26 26)"/>`;
+          }).join('')}
+        </svg>
+        <div class="status-thumb">${p?.avatar_url?`<img src="${p.avatar_url}">`:(p?.full_name||'?')[0]}</div>
+      </div>
+      <div class="status-info">
+        <div class="status-name">${p?.full_name||p?.username||'Usuário'}</div>
+        <div class="status-time">${App.formatTime(items[0].created_at)}</div>
+      </div>
+      <div class="status-count">${items.length} ${items.length===1?'status':'status'}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function openViewer(profile, items) {
+  currentStatuses = items; currentIdx = 0;
+  document.getElementById('viewerName').textContent = profile.full_name||profile.username;
+  const av = document.getElementById('viewerAvatar');
+  if (profile.avatar_url) av.innerHTML = `<img src="${profile.avatar_url}">`;
+  else av.textContent = (profile.full_name||'?')[0];
+  showStatusAt(0);
+  document.getElementById('statusViewer').classList.add('open');
+}
+
+function showStatusAt(idx) {
+  clearInterval(viewInterval);
+  const s = currentStatuses[idx];
+  document.getElementById('viewerTime').textContent = App.formatTime(s.created_at);
+  const media = document.getElementById('viewerMedia');
+
+  // Progress bars
+  const prog = document.getElementById('viewerProgress');
+  prog.innerHTML = currentStatuses.map((_, i) => `<div class="progress-bar"><div class="progress-fill" id="pb${i}" style="width:${i<idx?'100%':'0%'}"></div></div>`).join('');
+
+  if (s.type === 'image') media.innerHTML = `<img class="viewer-img" src="${s.content}">`;
+  else if (s.type === 'text') media.innerHTML = `<div class="viewer-text-content">${s.content}</div>`;
+
+  const fill = document.getElementById(`pb${idx}`);
+  const duration = s.type === 'text' ? 5000 : 7000;
+  let elapsed = 0;
+  viewInterval = setInterval(() => {
+    elapsed += 100;
+    fill.style.width = Math.min(100, elapsed / duration * 100) + '%';
+    if (elapsed >= duration) nextStatus();
+  }, 100);
+}
+
+function nextStatus() {
+  if (currentIdx < currentStatuses.length - 1) { currentIdx++; showStatusAt(currentIdx); }
+  else closeViewer();
+}
+
+function closeViewer() {
+  clearInterval(viewInterval);
+  document.getElementById('statusViewer').classList.remove('open');
+}
+
+function showAddOptions() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal(e) { if (e.target.classList.contains('modal-overlay')) document.getElementById('addModal').classList.remove('open'); }
+function triggerPhotoStatus() { document.getElementById('photoInput').click(); }
+function showTextStatus() { document.getElementById('textStatusForm').style.display = document.getElementById('textStatusForm').style.display === 'none' ? 'block' : 'none'; }
+
+async function publishTextStatus() {
+  const text = document.getElementById('statusText').value.trim();
+  if (!text) return;
+  await window.supabaseClient.from('statuses').insert({ user_id: App.currentUser.id, content: text, type: 'text' });
+  document.getElementById('addModal').classList.remove('open');
+  await loadStatuses();
+}
+
+async function uploadPhotoStatus(input) {
+  const file = input.files[0]; if (!file) return;
+  const ext = file.name.split('.').pop();
+  const path = `statuses/${App.currentUser.id}/${Date.now()}.${ext}`;
+  await window.supabaseClient.storage.from('media').upload(path, file);
+  const { data: url } = window.supabaseClient.storage.from('media').getPublicUrl(path);
+  await window.supabaseClient.from('statuses').insert({ user_id: App.currentUser.id, content: url.publicUrl, type: 'image' });
+  document.getElementById('addModal').classList.remove('open');
+  await loadStatuses();
+  input.value = '';
+}
+
+function reactStatus(emoji) { App.showToast(`${emoji} Reação enviada!`); }
+</script>
+</body>
+</html>

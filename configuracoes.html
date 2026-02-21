@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Configurações - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--online:#22c55e;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;padding-bottom:80px;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;text-decoration:none;display:flex;border-radius:8px;}
+  .back-btn:hover{background:var(--surface2);}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;}
+  .profile-card{margin:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .2s;text-decoration:none;color:var(--text);}
+  .profile-card:hover{background:var(--surface2);}
+  .avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:22px;overflow:hidden;flex-shrink:0;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .profile-info{flex:1;}
+  .profile-name{font-family:var(--font-head);font-weight:700;font-size:16px;}
+  .profile-handle{color:var(--text3);font-size:13px;margin-top:2px;}
+  .section-group{margin:0 16px 8px;}
+  .section-title{padding:14px 0 6px;color:var(--text3);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+  .setting-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;text-decoration:none;color:var(--text);}
+  .setting-item:first-of-type{border-radius:var(--radius) var(--radius) 0 0;}
+  .setting-item:last-of-type{border-radius:0 0 var(--radius) var(--radius);border-bottom:none;}
+  .setting-item:only-of-type{border-radius:var(--radius);}
+  .setting-item:hover{background:var(--surface2);}
+  .setting-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .setting-label{flex:1;}
+  .setting-title-text{font-size:15px;font-weight:500;}
+  .setting-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .setting-right{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:13px;}
+  .toggle{width:44px;height:24px;border-radius:12px;background:var(--surface2);position:relative;cursor:pointer;transition:background .3s;border:1.5px solid var(--border);flex-shrink:0;}
+  .toggle.on{background:var(--primary);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .3s;}
+  .toggle.on::after{transform:translateX(20px);}
+  .chevron-icon{width:16px;height:16px;color:var(--text3);}
+  .danger-text{color:#f87171;}
+  .version-info{text-align:center;padding:24px 16px;color:var(--text3);font-size:12px;}
+  select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:8px;font-family:var(--font-body);font-size:13px;outline:none;cursor:pointer;}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));z-index:100;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;color:var(--text3);text-decoration:none;transition:color .2s;}
+  .nav-item.active,.nav-item:hover{color:var(--primary-light);}
+  .nav-item svg{width:24px;height:24px;}
+  .nav-item span{font-size:10px;font-weight:500;}
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border);white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="index.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title">Configurações</div>
+</header>
+
+<a href="editar-perfil.html" class="profile-card">
+  <div class="avatar" id="settingsAvatar">?</div>
+  <div class="profile-info">
+    <div class="profile-name" id="settingsName">Carregando...</div>
+    <div class="profile-handle" id="settingsHandle">@...</div>
+  </div>
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18" style="color:var(--text3)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+</a>
+
+<div class="section-group">
+  <div class="section-title">Conta</div>
+  <a href="editar-perfil.html" class="setting-item">
+    <div class="setting-icon" style="background:rgba(124,58,237,.2)">👤</div>
+    <div class="setting-label"><div class="setting-title-text">Editar Perfil</div></div>
+    <div class="setting-right"><svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+  </a>
+  <a href="privacidade.html" class="setting-item">
+    <div class="setting-icon" style="background:rgba(56,189,248,.2)">🔒</div>
+    <div class="setting-label"><div class="setting-title-text">Privacidade</div></div>
+    <div class="setting-right"><svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+  </a>
+  <a href="seguranca.html" class="setting-item">
+    <div class="setting-icon" style="background:rgba(34,197,94,.2)">🛡️</div>
+    <div class="setting-label"><div class="setting-title-text">Segurança</div></div>
+    <div class="setting-right"><svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+  </a>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Aparência</div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(250,204,21,.2)">🌙</div>
+    <div class="setting-label"><div class="setting-title-text">Tema</div></div>
+    <div class="setting-right">
+      <select onchange="setTheme(this.value)">
+        <option value="dark">Escuro</option>
+        <option value="light">Claro</option>
+        <option value="system">Sistema</option>
+      </select>
+    </div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(244,114,182,.2)">🌐</div>
+    <div class="setting-label"><div class="setting-title-text">Idioma</div></div>
+    <div class="setting-right">
+      <select id="langSelect" onchange="setLanguage(this.value)">
+        <option value="pt-BR">Português</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Notificações</div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(124,58,237,.2)">🔔</div>
+    <div class="setting-label"><div class="setting-title-text">Notificações Push</div></div>
+    <div class="toggle on" id="togglePush" onclick="this.classList.toggle('on');saveToggle('pushNotif',this)"></div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(56,189,248,.2)">💬</div>
+    <div class="setting-label"><div class="setting-title-text">Sons de mensagem</div></div>
+    <div class="toggle on" id="toggleSounds" onclick="this.classList.toggle('on');saveToggle('messageSounds',this)"></div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(34,197,94,.2)">📳</div>
+    <div class="setting-label"><div class="setting-title-text">Vibração</div></div>
+    <div class="toggle on" id="toggleVibration" onclick="this.classList.toggle('on');saveToggle('vibration',this)"></div>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Armazenamento</div>
+  <a href="upload.html" class="setting-item">
+    <div class="setting-icon" style="background:rgba(250,204,21,.2)">📤</div>
+    <div class="setting-label"><div class="setting-title-text">Gerenciar Arquivos</div></div>
+    <div class="setting-right"><svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+  </a>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Sobre</div>
+  <div class="setting-item" onclick="showAbout()">
+    <div class="setting-icon" style="background:rgba(124,58,237,.2)">ℹ️</div>
+    <div class="setting-label"><div class="setting-title-text">Sobre o ChiaraGo</div><div class="setting-sub">Versão 1.0.0</div></div>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Sessão</div>
+  <div class="setting-item" onclick="confirmLogout()">
+    <div class="setting-icon" style="background:rgba(248,113,113,.2)">🚪</div>
+    <div class="setting-label"><div class="setting-title-text danger-text">Sair da Conta</div></div>
+  </div>
+</div>
+
+<div class="version-info">
+  ChiaraGo v1.0.0 · Feito com ❤️<br>
+  <span style="font-size:11px">© 2025 ChiaraGo. Todos os direitos reservados.</span>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span>Chats</span></a>
+  <a href="status.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg><span>Status</span></a>
+  <a href="contatos.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span>Contatos</span></a>
+  <a href="notificacoes.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span>Alertas</span></a>
+  <a href="configuracoes.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg><span>Config.</span></a>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script src="i18n.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  const p = App.currentProfile;
+  if (p) {
+    document.getElementById('settingsName').textContent = p.full_name || 'Usuário';
+    document.getElementById('settingsHandle').textContent = '@' + (p.username || '');
+    const av = document.getElementById('settingsAvatar');
+    if (p.avatar_url) av.innerHTML = `<img src="${p.avatar_url}" alt="">`;
+    else av.textContent = (p.full_name || '?')[0].toUpperCase();
+  }
+  document.getElementById('langSelect').value = i18n.locale;
+  // Load saved toggles
+  const prefs = JSON.parse(localStorage.getItem('chiara_prefs') || '{}');
+  if (prefs.pushNotif === false) document.getElementById('togglePush').classList.remove('on');
+  if (prefs.messageSounds === false) document.getElementById('toggleSounds').classList.remove('on');
+  if (prefs.vibration === false) document.getElementById('toggleVibration').classList.remove('on');
+});
+
+function saveToggle(key, el) {
+  const prefs = JSON.parse(localStorage.getItem('chiara_prefs') || '{}');
+  prefs[key] = el.classList.contains('on');
+  localStorage.setItem('chiara_prefs', JSON.stringify(prefs));
+  showToast(el.classList.contains('on') ? '✅ Ativado' : '🔕 Desativado');
+}
+function setTheme(t) { localStorage.setItem('chiara_theme', t); showToast('Tema salvo!'); }
+function setLanguage(l) { i18n.setLocale(l); showToast('Idioma atualizado!'); }
+function showAbout() { alert('ChiaraGo v1.0.0\nRede social de mensagens\nFeito com ❤️'); }
+async function confirmLogout() {
+  if (confirm('Tem certeza que deseja sair?')) await App.signOut();
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

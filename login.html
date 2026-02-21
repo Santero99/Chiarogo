@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a1a; --surface:#13132a; --surface2:#1a1a35;
+    --border:rgba(124,58,237,0.2); --border2:rgba(124,58,237,0.4);
+    --primary:#7c3aed; --primary-light:#9d5cf8;
+    --accent:#f472b6; --text:#f0f0ff; --text2:#a0a0c0; --text3:#606080;
+    --error:#f87171; --online:#22c55e;
+    --radius:16px; --radius-sm:8px; --radius-full:9999px;
+    --font-head:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+    background-image:radial-gradient(ellipse at 70% 80%,rgba(124,58,237,.15) 0%,transparent 60%),
+      radial-gradient(ellipse at 30% 10%,rgba(244,114,182,.1) 0%,transparent 50%);}
+  .card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:36px 28px;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+  .logo{font-family:var(--font-head);font-size:36px;font-weight:800;text-align:center;margin-bottom:4px;
+    background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+  .tagline{text-align:center;color:var(--text3);font-size:13px;margin-bottom:32px;}
+  h2{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:24px;text-align:center;}
+  .form-group{margin-bottom:16px;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px;}
+  input{width:100%;background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);padding:13px 14px;color:var(--text);font-family:var(--font-body);
+    font-size:15px;outline:none;transition:border-color .2s;}
+  input:focus{border-color:var(--primary);}
+  .btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-light));
+    border:none;border-radius:var(--radius-full);color:#fff;font-family:var(--font-head);
+    font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .2s;margin-top:8px;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .pass-wrap{position:relative;}
+  .pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);font-size:16px;}
+  .error-msg{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+    border-radius:var(--radius-sm);padding:10px 14px;color:var(--error);font-size:13px;
+    margin-bottom:16px;display:none;}
+  .error-msg.show{display:block;}
+  .link{color:var(--primary-light);text-decoration:none;font-size:13px;}
+  .link:hover{text-decoration:underline;}
+  .footer-links{display:flex;justify-content:space-between;margin-top:20px;flex-wrap:wrap;gap:8px;}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .divider span{color:var(--text3);font-size:12px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);
+    font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border2);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Reset password section */
+  .section{display:none;}
+  .section.active{display:block;}
+  .back-link{color:var(--text3);font-size:13px;cursor:pointer;text-align:center;margin-top:12px;display:block;}
+  .back-link:hover{color:var(--text2);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">ChiaraGo</div>
+  <div class="tagline">Sua rede de conexões reais</div>
+
+  <!-- Login -->
+  <div class="section active" id="loginSection">
+    <h2>Bem-vindo de volta</h2>
+    <div class="error-msg" id="loginErr"></div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input id="loginEmail" type="email" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <div class="pass-wrap">
+        <input id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password">
+        <span class="pass-toggle" onclick="togglePass()">👁</span>
+      </div>
+    </div>
+    <button class="btn" id="loginBtn" onclick="doLogin()">Entrar</button>
+    <div class="footer-links">
+      <a href="#" class="link" onclick="showReset()">Esqueceu a senha?</a>
+      <a href="cadastro.html" class="link">Criar conta</a>
+    </div>
+  </div>
+
+  <!-- Reset Password -->
+  <div class="section" id="resetSection">
+    <h2>Redefinir Senha</h2>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:20px;text-align:center;">
+      Digite seu e-mail para receber as instruções de redefinição.
+    </p>
+    <div class="error-msg" id="resetErr"></div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input id="resetEmail" type="email" placeholder="seu@email.com">
+    </div>
+    <button class="btn" id="resetBtn" onclick="doReset()">Enviar Link</button>
+    <span class="back-link" onclick="showLogin()">← Voltar para login</span>
+  </div>
+
+  <!-- Reset Sent -->
+  <div class="section" id="resetSentSection">
+    <div style="font-size:56px;text-align:center;margin:16px 0">📬</div>
+    <h2>E-mail Enviado!</h2>
+    <p style="text-align:center;color:var(--text2);font-size:14px;margin-bottom:24px;">
+      Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+    </p>
+    <button class="btn" onclick="showLogin()">Voltar ao Login</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+function togglePass() {
+  const i = document.getElementById('loginPassword');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+function showReset() {
+  document.getElementById('loginSection').classList.remove('active');
+  document.getElementById('resetSection').classList.add('active');
+}
+function showLogin() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('loginSection').classList.add('active');
+}
+function showToast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'var(--online)' : 'var(--error)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  if (!email || !pw) { err.textContent='Preencha todos os campos'; err.classList.add('show'); return; }
+  btn.disabled=true; btn.textContent='Entrando...';
+  try {
+    const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+    // Update online status
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    if (user) await window.supabaseClient.from('profiles').update({ is_online: true, last_seen: new Date().toISOString() }).eq('id', user.id);
+    window.location.href = 'index.html';
+  } catch(e) {
+    err.textContent = e.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos' : (e.message || 'Erro ao entrar');
+    err.classList.add('show');
+  }
+  btn.disabled=false; btn.textContent='Entrar';
+}
+async function doReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  const btn = document.getElementById('resetBtn');
+  const err = document.getElementById('resetErr');
+  if (!email) { err.textContent='Digite seu e-mail'; err.classList.add('show'); return; }
+  btn.disabled=true; btn.textContent='Enviando...';
+  try {
+    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/seguranca.html'
+    });
+    if (error) throw error;
+    document.getElementById('resetSection').classList.remove('active');
+    document.getElementById('resetSentSection').classList.add('active');
+  } catch(e) {
+    err.textContent = e.message || 'Erro ao enviar'; err.classList.add('show');
+  }
+  btn.disabled=false; btn.textContent='Enviar Link';
+}
+// Enter key
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+// Redirect if already logged in
+App.init().then(async () => {
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
+  if (session) window.location.href = 'index.html';
+});
+</script>
+</body>
+</html>

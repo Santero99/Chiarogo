@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Privacidade - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--online:#22c55e;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;padding-bottom:32px;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;text-decoration:none;display:flex;border-radius:8px;}
+  .back-btn:hover{background:var(--surface2);}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;flex:1;}
+  .section-group{margin:16px;}
+  .section-title{padding:0 0 8px;color:var(--text3);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+  .setting-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;}
+  .setting-item:first-of-type{border-radius:var(--radius) var(--radius) 0 0;}
+  .setting-item:last-of-type{border-radius:0 0 var(--radius) var(--radius);border-bottom:none;}
+  .setting-item:only-of-type{border-radius:var(--radius);}
+  .setting-item:hover{background:var(--surface2);}
+  .setting-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .setting-label{flex:1;}
+  .setting-title{font-size:15px;font-weight:500;}
+  .setting-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .toggle{width:44px;height:24px;border-radius:12px;background:var(--surface2);position:relative;cursor:pointer;transition:background .3s;border:1.5px solid var(--border);flex-shrink:0;}
+  .toggle.on{background:var(--primary);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .3s;}
+  .toggle.on::after{transform:translateX(20px);}
+  select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-family:var(--font-body);font-size:13px;outline:none;cursor:pointer;}
+  .blocked-list{margin:16px;}
+  .blocked-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.04);}
+  .blocked-item:first-child{border-radius:var(--radius) var(--radius) 0 0;}
+  .blocked-item:last-child{border-radius:0 0 var(--radius) var(--radius);border-bottom:none;}
+  .blocked-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;overflow:hidden;flex-shrink:0;}
+  .blocked-avatar img{width:100%;height:100%;object-fit:cover;}
+  .unblock-btn{background:none;border:1px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:var(--radius-full);font-size:12px;cursor:pointer;font-family:var(--font-body);transition:border-color .2s;}
+  .unblock-btn:hover{border-color:var(--primary);color:var(--text);}
+  .empty-blocked{text-align:center;padding:32px;color:var(--text3);font-size:13px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="configuracoes.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title">Privacidade</div>
+</header>
+
+<div class="section-group">
+  <div class="section-title">Visibilidade do Perfil</div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(56,189,248,.15)">👁</div>
+    <div class="setting-label"><div class="setting-title">Foto de perfil</div></div>
+    <select id="photoVisibility" onchange="savePref('photoVisibility',this.value)">
+      <option value="all">Todos</option>
+      <option value="contacts">Contatos</option>
+      <option value="nobody">Ninguém</option>
+    </select>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(124,58,237,.15)">📝</div>
+    <div class="setting-label"><div class="setting-title">Biografia</div></div>
+    <select id="bioVisibility" onchange="savePref('bioVisibility',this.value)">
+      <option value="all">Todos</option>
+      <option value="contacts">Contatos</option>
+      <option value="nobody">Ninguém</option>
+    </select>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(34,197,94,.15)">🕐</div>
+    <div class="setting-label"><div class="setting-title">Visto por último</div></div>
+    <select id="lastSeenVisibility" onchange="savePref('lastSeenVisibility',this.value)">
+      <option value="all">Todos</option>
+      <option value="contacts">Contatos</option>
+      <option value="nobody">Ninguém</option>
+    </select>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(250,204,21,.15)">🟢</div>
+    <div class="setting-label"><div class="setting-title">Status online</div></div>
+    <div class="toggle on" id="toggleOnlineStatus" onclick="togglePref('showOnline',this)"></div>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Mensagens</div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(244,114,182,.15)">✓✓</div>
+    <div class="setting-label"><div class="setting-title">Confirmações de leitura</div><div class="setting-sub">Mostrar quando você leu as mensagens</div></div>
+    <div class="toggle on" id="toggleReadReceipts" onclick="togglePref('readReceipts',this)"></div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(56,189,248,.15)">✍️</div>
+    <div class="setting-label"><div class="setting-title">Indicador de digitação</div><div class="setting-sub">Mostrar quando você está digitando</div></div>
+    <div class="toggle on" id="toggleTyping" onclick="togglePref('showTyping',this)"></div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(124,58,237,.15)">👥</div>
+    <div class="setting-label"><div class="setting-title">Quem pode me adicionar em grupos</div></div>
+    <select id="groupAddPerm" onchange="savePref('groupAddPerm',this.value)">
+      <option value="all">Todos</option>
+      <option value="contacts">Apenas contatos</option>
+      <option value="nobody">Ninguém</option>
+    </select>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Usuários Bloqueados</div>
+  <div id="blockedList"><div class="empty-blocked">Nenhum usuário bloqueado</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+let prefs = {};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  await loadPrefs();
+  await loadBlocked();
+});
+
+async function loadPrefs() {
+  const p = App.currentProfile;
+  if (p?.preferences) {
+    prefs = typeof p.preferences === 'string' ? JSON.parse(p.preferences) : p.preferences;
+    if (prefs.photoVisibility) document.getElementById('photoVisibility').value = prefs.photoVisibility;
+    if (prefs.bioVisibility) document.getElementById('bioVisibility').value = prefs.bioVisibility;
+    if (prefs.lastSeenVisibility) document.getElementById('lastSeenVisibility').value = prefs.lastSeenVisibility;
+    if (prefs.showOnline === false) document.getElementById('toggleOnlineStatus').classList.remove('on');
+    if (prefs.readReceipts === false) document.getElementById('toggleReadReceipts').classList.remove('on');
+    if (prefs.showTyping === false) document.getElementById('toggleTyping').classList.remove('on');
+    if (prefs.groupAddPerm) document.getElementById('groupAddPerm').value = prefs.groupAddPerm;
+  }
+}
+
+async function savePref(key, value) {
+  prefs[key] = value;
+  await window.supabaseClient.from('profiles').update({ preferences: JSON.stringify(prefs) }).eq('id', App.currentUser.id);
+  showToast('Salvo!');
+}
+
+async function togglePref(key, el) {
+  el.classList.toggle('on');
+  await savePref(key, el.classList.contains('on'));
+}
+
+async function loadBlocked() {
+  const { data } = await window.supabaseClient
+    .from('blocked_users')
+    .select('blocked_id, profiles:blocked_id(id, full_name, username, avatar_url)')
+    .eq('blocker_id', App.currentUser.id);
+  const list = document.getElementById('blockedList');
+  if (!data || !data.length) { list.innerHTML = '<div class="empty-blocked">Nenhum usuário bloqueado</div>'; return; }
+  list.innerHTML = '';
+  data.forEach(b => {
+    const p = b.profiles;
+    const item = document.createElement('div'); item.className = 'blocked-item';
+    item.innerHTML = `
+      <div class="blocked-avatar">${p?.avatar_url ? `<img src="${p.avatar_url}">` : (p?.full_name||'?')[0]}</div>
+      <div style="flex:1"><div style="font-weight:600">${p?.full_name||'Usuário'}</div><div style="font-size:12px;color:var(--text3)">@${p?.username||''}</div></div>
+      <button class="unblock-btn" onclick="unblock('${b.blocked_id}', this)">Desbloquear</button>`;
+    list.appendChild(item);
+  });
+}
+
+async function unblock(userId, btn) {
+  btn.disabled = true;
+  await window.supabaseClient.from('blocked_users').delete().eq('blocker_id', App.currentUser.id).eq('blocked_id', userId);
+  showToast('Usuário desbloqueado');
+  await loadBlocked();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

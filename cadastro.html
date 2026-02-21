@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadastro - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a1a; --bg2:#0f0f2a; --surface:#13132a; --surface2:#1a1a35;
+    --border:rgba(124,58,237,0.2); --border2:rgba(124,58,237,0.4);
+    --primary:#7c3aed; --primary-light:#9d5cf8; --primary-dark:#5b21b6;
+    --accent:#f472b6; --accent2:#38bdf8;
+    --text:#f0f0ff; --text2:#a0a0c0; --text3:#606080;
+    --online:#22c55e; --error:#f87171;
+    --radius:16px; --radius-sm:8px; --radius-full:9999px;
+    --font-head:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+    background-image:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,.15) 0%,transparent 60%),
+      radial-gradient(ellipse at 80% 20%,rgba(244,114,182,.1) 0%,transparent 50%);}
+  .card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:32px 28px;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+  .logo{font-family:var(--font-head);font-size:32px;font-weight:800;text-align:center;margin-bottom:4px;
+    background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;background-clip:text;}
+  .tagline{text-align:center;color:var(--text3);font-size:13px;margin-bottom:28px;}
+  h2{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:20px;text-align:center;}
+  .step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+  .step{width:28px;height:4px;border-radius:2px;background:var(--surface2);transition:background .3s;}
+  .step.active{background:var(--primary);}
+  .step.done{background:var(--online);}
+  .form-group{margin-bottom:16px;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px;}
+  input{width:100%;background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:var(--font-body);
+    font-size:15px;outline:none;transition:border-color .2s;}
+  input:focus{border-color:var(--primary);}
+  input.error{border-color:var(--error);}
+  .error-msg{color:var(--error);font-size:12px;margin-top:4px;display:none;}
+  .error-msg.show{display:block;}
+  .btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),var(--primary-light));
+    border:none;border-radius:var(--radius-full);color:#fff;font-family:var(--font-head);
+    font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .2s;margin-top:8px;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text2);}
+  .btn-outline:hover{border-color:var(--primary);color:var(--text);}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .divider span{color:var(--text3);font-size:12px;}
+  .link{color:var(--primary-light);text-decoration:none;font-size:14px;text-align:center;display:block;margin-top:16px;}
+  .link:hover{text-decoration:underline;}
+  .code-inputs{display:flex;gap:10px;justify-content:center;margin:20px 0;}
+  .code-input{width:48px;height:56px;text-align:center;font-size:22px;font-weight:700;
+    font-family:var(--font-head);background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);color:var(--text);outline:none;transition:border-color .2s;}
+  .code-input:focus{border-color:var(--primary);background:rgba(124,58,237,.1);}
+  .resend-btn{background:none;border:none;color:var(--primary-light);font-family:var(--font-body);
+    font-size:13px;cursor:pointer;padding:0;}
+  .resend-btn:hover{text-decoration:underline;}
+  .pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);}
+  .pass-wrap{position:relative;}
+  .strength-bar{height:3px;border-radius:2px;background:var(--surface2);margin-top:6px;overflow:hidden;}
+  .strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;width:0;}
+  .strength-label{font-size:11px;color:var(--text3);margin-top:4px;}
+  .section{display:none;}
+  .section.active{display:block;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);
+    font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border2);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .success-icon{font-size:64px;text-align:center;margin:16px 0;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">ChiaraGo</div>
+  <div class="tagline">Conectando pessoas com propósito</div>
+
+  <div class="step-indicator">
+    <div class="step active" id="step1ind"></div>
+    <div class="step" id="step2ind"></div>
+    <div class="step" id="step3ind"></div>
+  </div>
+
+  <!-- Step 1: Info -->
+  <div class="section active" id="section1">
+    <h2>Criar Conta</h2>
+    <div class="form-group">
+      <label>Nome Completo</label>
+      <input id="fullName" type="text" placeholder="Seu nome completo">
+      <div class="error-msg" id="nameErr">Digite seu nome completo</div>
+    </div>
+    <div class="form-group">
+      <label>Nome de Usuário</label>
+      <input id="username" type="text" placeholder="@seunome" autocomplete="username">
+      <div class="error-msg" id="usernameErr">Nome de usuário inválido</div>
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input id="email" type="email" placeholder="seu@email.com" autocomplete="email">
+      <div class="error-msg" id="emailErr">E-mail inválido</div>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <div class="pass-wrap">
+        <input id="password" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+        <span class="pass-toggle" onclick="togglePass('password')">👁</span>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div class="strength-label" id="strengthLabel"></div>
+    </div>
+    <div class="form-group">
+      <label>Confirmar Senha</label>
+      <div class="pass-wrap">
+        <input id="confirmPassword" type="password" placeholder="Repita sua senha" autocomplete="new-password">
+        <span class="pass-toggle" onclick="togglePass('confirmPassword')">👁</span>
+      </div>
+      <div class="error-msg" id="confirmErr">As senhas não coincidem</div>
+    </div>
+    <button class="btn" id="btnStep1" onclick="goStep2()">Continuar →</button>
+    <a href="login.html" class="link">Já tem conta? Entrar</a>
+  </div>
+
+  <!-- Step 2: Verify -->
+  <div class="section" id="section2">
+    <h2>Verificar E-mail</h2>
+    <p style="text-align:center;color:var(--text2);font-size:14px;margin-bottom:8px;">
+      Enviamos um código de 6 dígitos para<br>
+      <strong id="emailDisplay" style="color:var(--text)"></strong>
+    </p>
+    <div class="code-inputs" id="codeInputs">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c0">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c1">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c2">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c3">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c4">
+      <input class="code-input" type="number" maxlength="1" min="0" max="9" id="c5">
+    </div>
+    <div class="error-msg" id="codeErr" style="text-align:center;">Código inválido</div>
+    <button class="btn" id="btnVerify" onclick="verifyCode()">Verificar</button>
+    <p style="text-align:center;margin-top:16px;color:var(--text3);font-size:13px;">
+      Não recebeu? <button class="resend-btn" id="resendBtn" onclick="resendCode()">Reenviar código</button>
+      <span id="resendTimer" style="color:var(--text3);font-size:12px;"></span>
+    </p>
+    <a href="#" class="link" onclick="goStep1()">← Voltar</a>
+  </div>
+
+  <!-- Step 3: Done -->
+  <div class="section" id="section3">
+    <div class="success-icon">🎉</div>
+    <h2>Conta Criada!</h2>
+    <p style="text-align:center;color:var(--text2);font-size:14px;margin-bottom:24px;">
+      Bem-vindo ao ChiaraGo! Sua conta foi verificada com sucesso.
+    </p>
+    <button class="btn" onclick="window.location.href='index.html'">Começar a usar →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+let registeredEmail = '';
+let resendInterval = null;
+
+function showToast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'var(--online)' : 'var(--error)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
+
+function checkStrength(pw) {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  const colors = ['','#f87171','#fb923c','#facc15','#22c55e'];
+  const labels = ['','Fraca','Razoável','Boa','Forte'];
+  const fill = document.getElementById('strengthFill');
+  fill.style.width = s * 25 + '%';
+  fill.style.background = colors[s];
+  document.getElementById('strengthLabel').textContent = labels[s];
+}
+
+document.getElementById('password').addEventListener('input', e => checkStrength(e.target.value));
+
+// Code inputs navigation
+document.querySelectorAll('.code-input').forEach((inp, idx) => {
+  inp.addEventListener('input', e => {
+    const val = e.target.value.replace(/\D/g,'');
+    e.target.value = val.slice(-1);
+    if (val && idx < 5) document.getElementById(`c${idx+1}`).focus();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !e.target.value && idx > 0)
+      document.getElementById(`c${idx-1}`).focus();
+  });
+  inp.addEventListener('paste', e => {
+    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+    pasted.split('').forEach((ch, i) => {
+      const el = document.getElementById(`c${i}`);
+      if (el) el.value = ch;
+    });
+    e.preventDefault();
+    document.getElementById(`c${Math.min(pasted.length, 5)}`).focus();
+  });
+});
+
+function getCode() { return Array.from({length:6}, (_,i) => document.getElementById(`c${i}`).value).join(''); }
+
+function validateStep1() {
+  let ok = true;
+  const name = document.getElementById('fullName').value.trim();
+  const uname = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('password').value;
+  const cpw = document.getElementById('confirmPassword').value;
+
+  if (name.length < 2) { showErr('nameErr', 'fullName', true); ok = false; } else showErr('nameErr', 'fullName', false);
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) { showErr('usernameErr', 'username', true); ok = false; } else showErr('usernameErr', 'username', false);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('emailErr', 'email', true); ok = false; } else showErr('emailErr', 'email', false);
+  if (pw !== cpw) { showErr('confirmErr', 'confirmPassword', true); ok = false; } else showErr('confirmErr', 'confirmPassword', false);
+  return ok;
+}
+
+function showErr(errId, inputId, show) {
+  document.getElementById(errId).classList.toggle('show', show);
+  document.getElementById(inputId).classList.toggle('error', show);
+}
+
+function goStep1() {
+  document.getElementById('section1').classList.add('active');
+  document.getElementById('section2').classList.remove('active');
+  document.getElementById('step1ind').classList.add('active');
+  document.getElementById('step2ind').classList.remove('active');
+}
+
+async function goStep2() {
+  if (!validateStep1()) return;
+  const btn = document.getElementById('btnStep1');
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  try {
+    const email = document.getElementById('email').value.trim();
+    const pw = document.getElementById('password').value;
+    const fullName = document.getElementById('fullName').value.trim();
+    const username = document.getElementById('username').value.trim().toLowerCase();
+
+    // Check username unique
+    const { data: exists } = await window.supabaseClient.from('profiles').select('id').eq('username', username).single();
+    if (exists) { showToast('Nome de usuário já em uso', false); btn.disabled=false; btn.textContent='Continuar →'; return; }
+
+    // Sign up with Supabase (sends verification email automatically via custom SMTP)
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email, password: pw,
+      options: {
+        data: { full_name: fullName, username },
+        emailRedirectTo: window.location.origin + '/login.html'
+      }
+    });
+
+    if (error) throw error;
+
+    registeredEmail = email;
+    document.getElementById('emailDisplay').textContent = email;
+    document.getElementById('section1').classList.remove('active');
+    document.getElementById('section2').classList.add('active');
+    document.getElementById('step1ind').classList.add('done');
+    document.getElementById('step2ind').classList.add('active');
+    startResendTimer();
+  } catch(e) {
+    showToast(e.message || 'Erro ao criar conta', false);
+  }
+  btn.disabled=false; btn.textContent='Continuar →';
+}
+
+async function verifyCode() {
+  const code = getCode();
+  if (code.length < 6) { document.getElementById('codeErr').classList.add('show'); return; }
+  const btn = document.getElementById('btnVerify');
+  btn.disabled=true; btn.textContent='Verificando...';
+  try {
+    const { data, error } = await window.supabaseClient.auth.verifyOtp({
+      email: registeredEmail,
+      token: code,
+      type: 'signup'
+    });
+    if (error) throw error;
+
+    // Create profile
+    const fullName = document.getElementById('fullName').value.trim();
+    const username = document.getElementById('username').value.trim().toLowerCase();
+    await window.supabaseClient.from('profiles').insert({
+      id: data.user.id,
+      username, full_name: fullName, email: registeredEmail,
+      avatar_url: null, bio: '', is_online: true
+    });
+
+    document.getElementById('section2').classList.remove('active');
+    document.getElementById('section3').classList.add('active');
+    document.getElementById('step2ind').classList.add('done');
+    document.getElementById('step3ind').classList.add('active', 'done');
+  } catch(e) {
+    document.getElementById('codeErr').classList.add('show');
+    showToast(e.message || 'Código inválido', false);
+  }
+  btn.disabled=false; btn.textContent='Verificar';
+}
+
+async function resendCode() {
+  try {
+    await window.supabaseClient.auth.resend({ type: 'signup', email: registeredEmail });
+    showToast('Código reenviado!', true);
+    startResendTimer();
+  } catch(e) { showToast('Erro ao reenviar', false); }
+}
+
+function startResendTimer() {
+  let s = 60;
+  const btn = document.getElementById('resendBtn');
+  const timer = document.getElementById('resendTimer');
+  btn.disabled = true;
+  if (resendInterval) clearInterval(resendInterval);
+  resendInterval = setInterval(() => {
+    timer.textContent = ` (${s}s)`;
+    s--;
+    if (s < 0) { clearInterval(resendInterval); btn.disabled=false; timer.textContent=''; }
+  }, 1000);
+}
+</script>
+</body>
+</html>

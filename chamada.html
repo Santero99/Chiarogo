@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Chamada - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#050510">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#050510;--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--online:#22c55e;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+  #remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
+  #localVideo{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:120px;height:160px;border-radius:16px;object-fit:cover;background:#1a1a2e;border:2px solid rgba(255,255,255,.2);z-index:10;cursor:pointer;}
+  .overlay{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;pointer-events:none;}
+  .call-info{padding:max(48px,env(safe-area-inset-top)) 24px 24px;text-align:center;pointer-events:none;}
+  .call-name{font-family:var(--font-head);font-size:28px;font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,.8);}
+  .call-status{font-size:15px;color:rgba(255,255,255,.7);margin-top:4px;text-shadow:0 1px 6px rgba(0,0,0,.8);}
+  .call-timer{font-family:var(--font-head);font-size:20px;font-weight:600;margin-top:8px;color:var(--online);}
+  .avatar-call{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:48px;font-weight:800;margin:32px auto;border:4px solid rgba(255,255,255,.2);overflow:hidden;box-shadow:0 0 60px rgba(124,58,237,.4);}
+  .avatar-call img{width:100%;height:100%;object-fit:cover;}
+  .spacer{flex:1;}
+  .call-controls{padding:24px 24px max(24px,env(safe-area-inset-bottom));display:flex;justify-content:center;gap:20px;pointer-events:all;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);}
+  .ctrl-btn{width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .2s;backdrop-filter:blur(10px);}
+  .ctrl-btn svg{width:26px;height:26px;}
+  .ctrl-btn:hover{transform:scale(1.05);}
+  .ctrl-btn:active{transform:scale(.95);}
+  .btn-mute{background:rgba(255,255,255,.15);color:#fff;}
+  .btn-mute.active{background:rgba(248,113,113,.3);color:#f87171;}
+  .btn-video{background:rgba(255,255,255,.15);color:#fff;}
+  .btn-video.active{background:rgba(248,113,113,.3);color:#f87171;}
+  .btn-speaker{background:rgba(255,255,255,.15);color:#fff;}
+  .btn-end{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;width:70px;height:70px;}
+  /* Incoming call */
+  .incoming{position:fixed;inset:0;background:linear-gradient(135deg,#0a0a1a,#1a0a2e);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+  .incoming-pulse{width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;animation:pulse 1.5s infinite;overflow:hidden;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(124,58,237,.5);}70%{box-shadow:0 0 0 30px rgba(124,58,237,0);}100%{box-shadow:0 0 0 0 rgba(124,58,237,0);}}
+  .incoming-pulse img,.incoming-pulse span{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;font-family:var(--font-head);}
+  .incoming-pulse img{object-fit:cover;border-radius:50%;}
+  .incoming h2{font-family:var(--font-head);font-size:28px;font-weight:800;}
+  .incoming p{color:rgba(255,255,255,.6);font-size:16px;}
+  .incoming-actions{display:flex;gap:40px;margin-top:16px;}
+  .inc-btn{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform .15s;}
+  .inc-btn:hover{transform:scale(1.1);}
+  .btn-accept{background:linear-gradient(135deg,var(--online),#16a34a);}
+  .btn-decline{background:linear-gradient(135deg,#ef4444,#dc2626);}
+</style>
+</head>
+<body>
+<video id="remoteVideo" autoplay playsinline></video>
+<video id="localVideo" autoplay playsinline muted></video>
+
+<!-- Active call -->
+<div class="overlay" id="callOverlay">
+  <div class="call-info">
+    <div class="call-name" id="calleeName">Carregando...</div>
+    <div class="call-status" id="callStatus">Conectando...</div>
+    <div class="call-timer" id="callTimer" style="display:none">00:00</div>
+  </div>
+  <div class="avatar-call" id="callAvatar" style="display:none">?</div>
+  <div class="spacer"></div>
+  <div class="call-controls">
+    <button class="ctrl-btn btn-mute" id="muteBtn" onclick="toggleMute()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+    </button>
+    <button class="ctrl-btn btn-video" id="videoBtn" onclick="toggleVideo()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+    </button>
+    <button class="ctrl-btn btn-speaker" id="speakerBtn" onclick="toggleSpeaker()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 9H5a1 1 0 00-1 1v4a1 1 0 001 1h3l4 3V6z"/></svg>
+    </button>
+    <button class="ctrl-btn btn-end" onclick="endCall()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a16.003 16.003 0 0114 14L5 3zm0 0L3 5a16 16 0 0016 16l-2 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Incoming call -->
+<div class="incoming" id="incomingCall" style="display:none">
+  <div class="incoming-pulse" id="incomingAvatar"><span>?</span></div>
+  <h2 id="incomingName">Chamada</h2>
+  <p id="incomingType">Chamada de áudio</p>
+  <div class="incoming-actions">
+    <button class="inc-btn btn-decline" onclick="declineCall()">📵</button>
+    <button class="inc-btn btn-accept" onclick="acceptCall()">📞</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script src="signaling.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const targetUser = params.get('user');
+const callType = params.get('type') || 'video';
+const incomingCallId = params.get('call');
+let timerInterval = null, seconds = 0, pendingCall = null;
+let muted = false, videoOff = false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+
+  if (incomingCallId) {
+    await loadIncomingCall(incomingCallId);
+  } else if (targetUser) {
+    await loadTargetUser();
+    await initiateCall();
+  }
+});
+
+async function loadTargetUser() {
+  const { data: profile } = await window.supabaseClient.from('profiles').select('*').eq('id', targetUser).single();
+  if (profile) {
+    document.getElementById('calleeName').textContent = profile.full_name || profile.username;
+    const av = document.getElementById('callAvatar');
+    av.style.display = 'flex';
+    if (profile.avatar_url) av.innerHTML = `<img src="${profile.avatar_url}">`;
+    else av.textContent = (profile.full_name||'?')[0];
+  }
+}
+
+async function loadIncomingCall(callId) {
+  const { data: call } = await window.supabaseClient.from('calls').select('*, profiles!caller_id(full_name, avatar_url)').eq('id', callId).single();
+  if (!call) return;
+  pendingCall = call;
+  const profile = call.profiles;
+  document.getElementById('incomingName').textContent = profile?.full_name || 'Chamada';
+  document.getElementById('incomingType').textContent = call.is_video ? '📹 Chamada de vídeo' : '📞 Chamada de áudio';
+  const av = document.getElementById('incomingAvatar');
+  if (profile?.avatar_url) av.innerHTML = `<img src="${profile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  else av.innerHTML = `<span>${(profile?.full_name||'?')[0]}</span>`;
+  document.getElementById('incomingCall').style.display = 'flex';
+}
+
+async function initiateCall() {
+  document.getElementById('callStatus').textContent = 'Chamando...';
+  try {
+    await Signaling.startCall(targetUser, callType === 'video');
+    document.getElementById('callStatus').textContent = 'Aguardando resposta...';
+    listenForAnswer();
+  } catch(e) {
+    document.getElementById('callStatus').textContent = 'Erro ao iniciar chamada';
+  }
+}
+
+function listenForAnswer() {
+  window.supabaseClient.channel(`listen:${Signaling.currentCallId}`)
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'calls', filter:`id=eq.${Signaling.currentCallId}` }, payload => {
+      if (payload.new.status === 'active') { document.getElementById('callStatus').textContent = 'Conectado'; startTimer(); hideAvatar(); }
+      if (payload.new.status === 'ended') { endCall(); }
+    }).subscribe();
+}
+
+async function acceptCall() {
+  document.getElementById('incomingCall').style.display = 'none';
+  try {
+    await Signaling.answerCall(pendingCall.id, pendingCall.offer);
+    document.getElementById('callStatus').textContent = 'Conectado';
+    startTimer();
+    hideAvatar();
+    listenForEnd();
+  } catch(e) { console.error(e); }
+}
+
+async function declineCall() {
+  if (pendingCall) {
+    await window.supabaseClient.from('calls').update({ status: 'declined' }).eq('id', pendingCall.id);
+  }
+  window.location.href = 'index.html';
+}
+
+function listenForEnd() {
+  window.supabaseClient.channel(`end:${pendingCall.id}`)
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'calls', filter:`id=eq.${pendingCall.id}` }, payload => {
+      if (payload.new.status === 'ended') endCall();
+    }).subscribe();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = Math.floor(seconds / 60).toString().padStart(2,'0');
+    const s = (seconds % 60).toString().padStart(2,'0');
+    const timer = document.getElementById('callTimer');
+    timer.textContent = `${m}:${s}`;
+    timer.style.display = 'block';
+  }, 1000);
+}
+
+function hideAvatar() { document.getElementById('callAvatar').style.display = 'none'; }
+
+async function endCall() {
+  clearInterval(timerInterval);
+  await Signaling.endCall();
+  window.location.href = 'index.html';
+}
+
+function toggleMute() {
+  const enabled = Signaling.toggleAudio();
+  muted = !enabled;
+  document.getElementById('muteBtn').classList.toggle('active', muted);
+}
+
+function toggleVideo() {
+  const enabled = Signaling.toggleVideo();
+  videoOff = !enabled;
+  document.getElementById('videoBtn').classList.toggle('active', videoOff);
+}
+
+function toggleSpeaker() { App.showToast('Speaker toggle'); }
+</script>
+</body>
+</html>
