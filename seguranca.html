@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Segurança - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--online:#22c55e;--error:#f87171;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;padding-bottom:32px;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;text-decoration:none;display:flex;border-radius:8px;}
+  .back-btn:hover{background:var(--surface2);}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;flex:1;}
+  .section-group{margin:16px;}
+  .section-title{padding:0 0 8px;color:var(--text3);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+  .setting-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;}
+  .setting-item:first-of-type{border-radius:var(--radius) var(--radius) 0 0;}
+  .setting-item:last-of-type{border-radius:0 0 var(--radius) var(--radius);border-bottom:none;}
+  .setting-item:only-of-type{border-radius:var(--radius);}
+  .setting-item:hover{background:var(--surface2);}
+  .setting-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .setting-label{flex:1;}
+  .setting-title{font-size:15px;font-weight:500;}
+  .setting-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .toggle{width:44px;height:24px;border-radius:12px;background:var(--surface2);position:relative;cursor:pointer;transition:background .3s;border:1.5px solid var(--border);flex-shrink:0;}
+  .toggle.on{background:var(--primary);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .3s;}
+  .toggle.on::after{transform:translateX(20px);}
+  .chevron-icon{width:16px;height:16px;color:var(--text3);flex-shrink:0;}
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;}
+  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+  .modal h3{font-family:var(--font-head);font-size:18px;margin-bottom:6px;}
+  .modal p{color:var(--text2);font-size:14px;margin-bottom:20px;}
+  input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;margin-bottom:12px;transition:border-color .2s;}
+  input:focus{border-color:var(--primary);}
+  .pass-wrap{position:relative;margin-bottom:12px;}
+  .pass-wrap input{margin-bottom:0;}
+  .pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text3);}
+  .btn{width:100%;padding:13px;border:none;border-radius:var(--radius-full);font-family:var(--font-head);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;}
+  .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;margin-top:8px;}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .error-msg{color:var(--error);font-size:13px;margin-bottom:12px;display:none;}
+  .error-msg.show{display:block;}
+  .success-msg{color:var(--online);font-size:13px;margin-bottom:12px;display:none;}
+  .success-msg.show{display:block;}
+  .session-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,.04);}
+  .session-item:first-child{border-radius:var(--radius) var(--radius) 0 0;}
+  .session-item:last-child{border-radius:0 0 var(--radius) var(--radius);border-bottom:none;}
+  .session-icon{width:36px;height:36px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .session-current{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius-sm);padding:2px 8px;font-size:11px;color:var(--online);font-weight:600;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="configuracoes.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title">Segurança</div>
+</header>
+
+<div class="section-group">
+  <div class="section-title">Senha</div>
+  <div class="setting-item" onclick="showChangePassword()">
+    <div class="setting-icon" style="background:rgba(124,58,237,.15)">🔑</div>
+    <div class="setting-label"><div class="setting-title">Alterar Senha</div><div class="setting-sub">Última alteração: nunca</div></div>
+    <svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Autenticação em Dois Fatores</div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(34,197,94,.15)">🛡️</div>
+    <div class="setting-label"><div class="setting-title">Autenticação 2FA</div><div class="setting-sub">Adicione uma camada extra de segurança</div></div>
+    <div class="toggle" id="toggle2FA" onclick="toggle2FA(this)"></div>
+  </div>
+  <div class="setting-item">
+    <div class="setting-icon" style="background:rgba(56,189,248,.15)">📱</div>
+    <div class="setting-label"><div class="setting-title">Verificação por SMS</div><div class="setting-sub">Receba códigos via SMS</div></div>
+    <div class="toggle" id="toggleSMS" onclick="this.classList.toggle('on');showToast('Salvo!')"></div>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Sessões Ativas</div>
+  <div id="sessionsList">
+    <div class="session-item">
+      <div class="session-icon">📱</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">Este dispositivo</div>
+        <div style="font-size:12px;color:var(--text3)" id="deviceInfo">Carregando...</div>
+      </div>
+      <span class="session-current">Atual</span>
+    </div>
+  </div>
+  <div style="margin-top:8px;">
+    <button style="width:100%;padding:12px;background:none;border:1px solid rgba(248,113,113,.3);color:#f87171;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:14px;cursor:pointer;" onclick="logoutAllDevices()">Sair de todos os outros dispositivos</button>
+  </div>
+</div>
+
+<div class="section-group">
+  <div class="section-title">Conta</div>
+  <div class="setting-item" onclick="showDeleteAccount()" style="color:#f87171;">
+    <div class="setting-icon" style="background:rgba(248,113,113,.15)">⚠️</div>
+    <div class="setting-label"><div class="setting-title" style="color:#f87171">Excluir Conta</div><div class="setting-sub">Esta ação é irreversível</div></div>
+    <svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal-overlay" id="pwModal" onclick="closeModal('pwModal',event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Alterar Senha</h3>
+    <p>Digite sua nova senha abaixo.</p>
+    <div class="error-msg" id="pwErr"></div>
+    <div class="success-msg" id="pwSuccess"></div>
+    <div class="pass-wrap">
+      <input id="newPw" type="password" placeholder="Nova senha">
+      <span class="pass-toggle" onclick="togglePass('newPw')">👁</span>
+    </div>
+    <div class="pass-wrap">
+      <input id="confirmPw" type="password" placeholder="Confirmar nova senha">
+      <span class="pass-toggle" onclick="togglePass('confirmPw')">👁</span>
+    </div>
+    <button class="btn btn-primary" onclick="changePassword()">Alterar Senha</button>
+  </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal-overlay" id="deleteModal" onclick="closeModal('deleteModal',event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>⚠️ Excluir Conta</h3>
+    <p>Esta ação é permanente e não pode ser desfeita. Digite sua senha para confirmar.</p>
+    <div class="error-msg" id="deleteErr"></div>
+    <div class="pass-wrap">
+      <input id="deletePw" type="password" placeholder="Sua senha atual">
+      <span class="pass-toggle" onclick="togglePass('deletePw')">👁</span>
+    </div>
+    <button class="btn btn-danger" onclick="deleteAccount()">Excluir Minha Conta</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  const ua = navigator.userAgent;
+  const device = /mobile/i.test(ua) ? '📱 Mobile' : '💻 Desktop';
+  document.getElementById('deviceInfo').textContent = `${device} · ${new Date().toLocaleDateString('pt-BR')}`;
+});
+
+function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
+function showChangePassword() { document.getElementById('pwModal').classList.add('open'); }
+function showDeleteAccount() { document.getElementById('deleteModal').classList.add('open'); }
+function closeModal(id, e) { if (e.target.classList.contains('modal-overlay')) document.getElementById(id).classList.remove('open'); }
+
+async function changePassword() {
+  const np = document.getElementById('newPw').value;
+  const cp = document.getElementById('confirmPw').value;
+  const err = document.getElementById('pwErr');
+  const suc = document.getElementById('pwSuccess');
+  if (np.length < 8) { err.textContent = 'Senha muito curta (mín. 8 caracteres)'; err.classList.add('show'); return; }
+  if (np !== cp) { err.textContent = 'Senhas não coincidem'; err.classList.add('show'); return; }
+  err.classList.remove('show');
+  const { error } = await window.supabaseClient.auth.updateUser({ password: np });
+  if (error) { err.textContent = error.message; err.classList.add('show'); return; }
+  suc.textContent = 'Senha alterada com sucesso!'; suc.classList.add('show');
+  setTimeout(() => document.getElementById('pwModal').classList.remove('open'), 1500);
+}
+
+async function deleteAccount() {
+  const pw = document.getElementById('deletePw').value;
+  const err = document.getElementById('deleteErr');
+  if (!pw) { err.textContent = 'Digite sua senha'; err.classList.add('show'); return; }
+  const email = App.currentUser.email;
+  const { error: loginErr } = await window.supabaseClient.auth.signInWithPassword({ email, password: pw });
+  if (loginErr) { err.textContent = 'Senha incorreta'; err.classList.add('show'); return; }
+  await window.supabaseClient.from('profiles').delete().eq('id', App.currentUser.id);
+  await window.supabaseClient.auth.admin?.deleteUser(App.currentUser.id);
+  await window.supabaseClient.auth.signOut();
+  window.location.href = 'cadastro.html';
+}
+
+function toggle2FA(el) { el.classList.toggle('on'); showToast(el.classList.contains('on') ? '2FA ativado!' : '2FA desativado'); }
+async function logoutAllDevices() {
+  if (!confirm('Sair de todos os outros dispositivos?')) return;
+  await window.supabaseClient.auth.signOut({ scope: 'others' });
+  showToast('Sessões encerradas!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

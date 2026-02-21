@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--font-head:'Syne',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;gap:32px;
+    background-image:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,.2) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(244,114,182,.15) 0%,transparent 50%);}
+  .logo{font-family:var(--font-head);font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.8;transform:scale(.97);}}
+  .spinner{width:48px;height:48px;border:3px solid rgba(124,58,237,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:rgba(255,255,255,.4);font-family:var(--font-head);font-size:14px;letter-spacing:.06em;}
+  .dots{display:flex;gap:8px;margin-top:-16px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);animation:bounce .6s infinite alternate;}
+  .dot:nth-child(2){animation-delay:.15s;background:linear-gradient(135deg,var(--primary),var(--accent));}
+  .dot:nth-child(3){animation-delay:.3s;background:var(--accent);}
+  @keyframes bounce{to{transform:translateY(-10px);opacity:.4;}}
+</style>
+</head>
+<body>
+<div class="logo">ChiaraGo</div>
+<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+<div class="loading-text">Carregando...</div>
+<script>
+// Auto-redirect after load check
+setTimeout(() => {
+  const redirect = new URLSearchParams(window.location.search).get('redirect');
+  if (redirect) window.location.href = decodeURIComponent(redirect);
+}, 500);
+</script>
+</body>
+</html>

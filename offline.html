@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sem Conexão - ChiaraGo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;
+    background-image:radial-gradient(ellipse at 30% 50%,rgba(124,58,237,.1) 0%,transparent 60%);}
+  .icon{font-size:96px;margin-bottom:24px;animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+  h1{font-family:var(--font-head);font-size:28px;font-weight:800;margin-bottom:12px;}
+  p{color:var(--text2);font-size:15px;max-width:300px;line-height:1.6;margin-bottom:32px;}
+  .btn{background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;color:#fff;padding:14px 32px;border-radius:var(--radius-full);font-family:var(--font-head);font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s;}
+  .btn:hover{transform:translateY(-1px);}
+  .status-dot{width:10px;height:10px;background:#f87171;border-radius:50%;display:inline-block;margin-right:8px;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .status-bar{display:flex;align-items:center;justify-content:center;margin-bottom:24px;color:#f87171;font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="icon">📡</div>
+<div class="status-bar"><span class="status-dot"></span>Sem conexão</div>
+<h1>Você está offline</h1>
+<p>Verifique sua conexão com a internet e tente novamente. Suas mensagens serão sincronizadas quando você reconectar.</p>
+<button class="btn" onclick="tryReconnect()">Tentar Novamente</button>
+<script>
+window.addEventListener('online', () => { window.history.back() || (window.location.href = '/'); });
+function tryReconnect() {
+  if (navigator.onLine) window.history.back() || (window.location.href = '/');
+  else { document.querySelector('p').textContent = 'Ainda sem conexão. Verifique sua rede.'; }
+}
+</script>
+</body>
+</html>

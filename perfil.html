@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Perfil - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--border2:rgba(124,58,237,.4);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--online:#22c55e;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;display:flex;align-items:center;text-decoration:none;border-radius:8px;}
+  .back-btn:hover{background:var(--surface2);}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;flex:1;}
+  .icon-btn{color:var(--text2);padding:7px;cursor:pointer;border-radius:8px;display:flex;align-items:center;text-decoration:none;transition:background .2s;}
+  .icon-btn:hover{background:var(--surface2);}
+  .icon-btn svg{width:20px;height:20px;}
+  .cover{height:160px;background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);position:relative;}
+  .cover-gradient{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(255,255,255,.1),transparent);}
+  .profile-header{padding:0 16px 24px;position:relative;}
+  .avatar-wrap{position:absolute;top:-52px;left:16px;}
+  .profile-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:40px;font-weight:800;border:4px solid var(--bg);overflow:hidden;cursor:pointer;}
+  .profile-avatar img{width:100%;height:100%;object-fit:cover;}
+  .online-badge{position:absolute;bottom:4px;right:4px;width:18px;height:18px;background:var(--online);border-radius:50%;border:3px solid var(--bg);}
+  .profile-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;min-height:52px;}
+  .btn{padding:9px 20px;border:none;border-radius:var(--radius-full);cursor:pointer;font-family:var(--font-head);font-size:13px;font-weight:700;transition:transform .15s;display:flex;align-items:center;gap:6px;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;}
+  .btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text);}
+  .btn-outline:hover{border-color:var(--primary);}
+  .profile-info{margin-top:56px;}
+  .profile-name{font-family:var(--font-head);font-size:24px;font-weight:800;}
+  .profile-username{color:var(--text3);font-size:14px;margin-top:2px;}
+  .profile-bio{color:var(--text2);font-size:15px;margin-top:10px;line-height:1.6;}
+  .profile-stats{display:flex;gap:24px;margin-top:16px;padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .stat{text-align:center;flex:1;}
+  .stat-num{font-family:var(--font-head);font-size:20px;font-weight:800;}
+  .stat-label{color:var(--text3);font-size:12px;margin-top:2px;}
+  .profile-details{padding:16px 0;}
+  .detail-item{display:flex;align-items:center;gap:12px;padding:10px 0;color:var(--text2);font-size:14px;}
+  .detail-icon{width:20px;height:20px;flex-shrink:0;color:var(--text3);}
+  .section-title{font-family:var(--font-head);font-size:16px;font-weight:700;padding:16px 0 8px;}
+  .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:var(--radius-sm);overflow:hidden;}
+  .media-item{aspect-ratio:1;background:var(--surface2);overflow:hidden;cursor:pointer;}
+  .media-item img{width:100%;height:100%;object-fit:cover;}
+  .media-more{background:rgba(124,58,237,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:18px;font-weight:700;color:rgba(255,255,255,.8);}
+  .content{padding:0 16px 80px;}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border2);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .block-btn{color:#f87171;padding:12px 0;text-align:center;cursor:pointer;font-size:14px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="index.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title" id="pageTitle">Perfil</div>
+  <a href="editar-perfil.html" class="icon-btn" id="editBtn" style="display:none">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+  </a>
+</header>
+
+<div class="cover"><div class="cover-gradient"></div></div>
+
+<div class="profile-header">
+  <div class="avatar-wrap">
+    <div class="profile-avatar" id="profileAvatar">?</div>
+    <div class="online-badge" id="onlineBadge" style="display:none"></div>
+  </div>
+  <div class="profile-actions" id="profileActions">
+    <!-- filled dynamically -->
+  </div>
+  <div class="profile-info">
+    <div class="profile-name" id="profileName">Carregando...</div>
+    <div class="profile-username" id="profileUsername">@...</div>
+    <div class="profile-bio" id="profileBio"></div>
+    <div class="profile-stats">
+      <div class="stat"><div class="stat-num" id="statMessages">0</div><div class="stat-label">Mensagens</div></div>
+      <div class="stat"><div class="stat-num" id="statContacts">0</div><div class="stat-label">Contatos</div></div>
+      <div class="stat"><div class="stat-num" id="statGroups">0</div><div class="stat-label">Grupos</div></div>
+    </div>
+    <div class="profile-details" id="profileDetails"></div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-title">Mídia</div>
+  <div class="media-grid" id="mediaGrid">
+    <div class="media-item" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;aspect-ratio:unset;height:80px;"><span style="color:var(--text3);font-size:13px">Nenhuma mídia compartilhada</span></div>
+  </div>
+  <div id="blockSection"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const viewingId = urlParams.get('id');
+let isOwnProfile = false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  const targetId = viewingId || App.currentUser.id;
+  isOwnProfile = targetId === App.currentUser.id;
+  await loadProfile(targetId);
+});
+
+async function loadProfile(userId) {
+  const { data: profile } = await window.supabaseClient.from('profiles').select('*').eq('id', userId).single();
+  if (!profile) { document.getElementById('profileName').textContent = 'Usuário não encontrado'; return; }
+
+  document.title = `${profile.full_name||'Perfil'} - ChiaraGo`;
+  document.getElementById('profileName').textContent = profile.full_name || 'Sem nome';
+  document.getElementById('profileUsername').textContent = `@${profile.username || ''}`;
+  document.getElementById('profileBio').textContent = profile.bio || '';
+
+  const av = document.getElementById('profileAvatar');
+  if (profile.avatar_url) av.innerHTML = `<img src="${profile.avatar_url}" alt="">`;
+  else av.textContent = (profile.full_name||'?')[0];
+
+  if (profile.is_online) document.getElementById('onlineBadge').style.display = 'block';
+
+  // Details
+  const details = document.getElementById('profileDetails');
+  details.innerHTML = '';
+  if (profile.phone) addDetail(details, '📞', profile.phone);
+  if (profile.location) addDetail(details, '📍', profile.location);
+  addDetail(details, '📅', `Desde ${new Date(profile.created_at).toLocaleDateString('pt-BR', {month:'long',year:'numeric'})}`);
+
+  // Stats
+  const { count: msgs } = await window.supabaseClient.from('messages').select('id',{count:'exact',head:true}).eq('sender_id', userId);
+  document.getElementById('statMessages').textContent = msgs||0;
+  const { count: contacts } = await window.supabaseClient.from('contacts').select('id',{count:'exact',head:true}).eq('user_id', userId);
+  document.getElementById('statContacts').textContent = contacts||0;
+  const { count: groups } = await window.supabaseClient.from('group_members').select('id',{count:'exact',head:true}).eq('user_id', userId);
+  document.getElementById('statGroups').textContent = groups||0;
+
+  // Actions
+  const actions = document.getElementById('profileActions');
+  if (isOwnProfile) {
+    document.getElementById('editBtn').style.display = 'flex';
+    actions.innerHTML = `<button class="btn btn-outline" onclick="window.location.href='configuracoes.html'">⚙️ Config.</button>
+      <button class="btn btn-primary" onclick="App.signOut()">Sair</button>`;
+  } else {
+    actions.innerHTML = `
+      <a href="chat.html?user=${userId}" class="btn btn-primary">💬 Mensagem</a>
+      <a href="chamada.html?user=${userId}&type=audio" class="btn btn-outline">📞</a>
+      <a href="chamada.html?user=${userId}&type=video" class="btn btn-outline">📹</a>`;
+    document.getElementById('blockSection').innerHTML = `
+      <div class="block-btn" onclick="blockUser('${userId}')">🚫 Bloquear usuário</div>`;
+  }
+
+  // Media
+  const { data: media } = await window.supabaseClient.from('messages').select('content,type').eq('sender_id', userId).in('type',['image']).limit(9);
+  if (media && media.length > 0) {
+    const grid = document.getElementById('mediaGrid');
+    grid.innerHTML = '';
+    media.forEach((m, i) => {
+      const div = document.createElement('div');
+      div.className = 'media-item';
+      if (i === 8 && media.length > 9) div.classList.add('media-more');
+      if (div.classList.contains('media-more')) div.textContent = `+${media.length - 8}`;
+      else div.innerHTML = `<img src="${m.content}" loading="lazy">`;
+      grid.appendChild(div);
+    });
+  }
+}
+
+function addDetail(container, icon, text) {
+  const div = document.createElement('div'); div.className='detail-item';
+  div.innerHTML = `<span style="font-size:18px">${icon}</span><span>${text}</span>`;
+  container.appendChild(div);
+}
+
+async function blockUser(userId) {
+  if (!confirm('Bloquear este usuário?')) return;
+  await window.supabaseClient.from('blocked_users').insert({ blocker_id: App.currentUser.id, blocked_id: userId });
+  App.showToast('Usuário bloqueado', 'success');
+  setTimeout(() => window.location.href = 'contatos.html', 1000);
+}
+</script>
+</body>
+</html>

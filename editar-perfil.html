@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Perfil - ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a1a;--surface:#13132a;--surface2:#1a1a35;--border:rgba(124,58,237,.2);--border2:rgba(124,58,237,.4);--primary:#7c3aed;--primary-light:#9d5cf8;--accent:#f472b6;--text:#f0f0ff;--text2:#a0a0c0;--text3:#606080;--radius:16px;--radius-sm:10px;--radius-full:9999px;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100dvh;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(12px,env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
+  .back-btn{color:var(--text2);padding:6px;cursor:pointer;display:flex;align-items:center;text-decoration:none;}
+  .back-btn svg{width:22px;height:22px;}
+  .header-title{font-family:var(--font-head);font-size:18px;font-weight:700;flex:1;}
+  .save-btn{background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;color:#fff;font-family:var(--font-head);font-weight:700;font-size:13px;padding:8px 18px;border-radius:var(--radius-full);cursor:pointer;}
+  .save-btn:disabled{opacity:.4;cursor:default;}
+  .avatar-section{display:flex;flex-direction:column;align-items:center;padding:28px 16px;gap:12px;}
+  .avatar-preview{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:40px;font-weight:800;overflow:hidden;position:relative;cursor:pointer;border:3px solid var(--border2);}
+  .avatar-preview img{width:100%;height:100%;object-fit:cover;}
+  .avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:24px;opacity:0;transition:opacity .2s;}
+  .avatar-preview:hover .avatar-overlay{opacity:1;}
+  .avatar-hint{font-size:13px;color:var(--primary-light);cursor:pointer;}
+  .form{padding:0 16px 80px;}
+  .form-group{margin-bottom:20px;}
+  label{display:block;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px;}
+  input,textarea,select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none;transition:border-color .2s;}
+  textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  input:focus,textarea:focus,select:focus{border-color:var(--primary);}
+  .char-count{text-align:right;font-size:11px;color:var(--text3);margin-top:4px;}
+  .section-divider{height:1px;background:var(--border);margin:24px 0;}
+  .section-label{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.06em;}
+  .toggle-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+  .toggle-info{flex:1;}
+  .toggle-label{font-size:15px;font-weight:500;}
+  .toggle-desc{font-size:12px;color:var(--text3);margin-top:2px;}
+  .toggle{width:48px;height:26px;border-radius:13px;background:var(--surface2);position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;border:1.5px solid var(--border);}
+  .toggle.on{background:var(--primary);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+  .toggle.on::after{transform:translateX(22px);}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);color:var(--text);padding:12px 24px;border-radius:var(--radius-full);font-size:14px;opacity:0;transition:all .3s;z-index:9999;border:1px solid var(--border2);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="perfil.html" class="back-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></a>
+  <div class="header-title">Editar Perfil</div>
+  <button class="save-btn" id="saveBtn" onclick="saveProfile()">Salvar</button>
+</header>
+
+<div class="avatar-section">
+  <div class="avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarInput').click()">
+    <span id="avatarInitial">?</span>
+    <div class="avatar-overlay">📷</div>
+  </div>
+  <span class="avatar-hint" onclick="document.getElementById('avatarInput').click()">Alterar foto de perfil</span>
+  <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(this)">
+</div>
+
+<form class="form" onsubmit="e=>e.preventDefault()">
+  <div class="section-label">Informações Pessoais</div>
+  <div class="form-group">
+    <label>Nome Completo</label>
+    <input id="fullName" type="text" placeholder="Seu nome completo" maxlength="60">
+    <div class="char-count"><span id="nameCount">0</span>/60</div>
+  </div>
+  <div class="form-group">
+    <label>Nome de Usuário</label>
+    <input id="username" type="text" placeholder="@seunome" maxlength="30">
+  </div>
+  <div class="form-group">
+    <label>Biografia</label>
+    <textarea id="bio" placeholder="Conte algo sobre você..." maxlength="160" oninput="document.getElementById('bioCount').textContent=this.value.length"></textarea>
+    <div class="char-count"><span id="bioCount">0</span>/160</div>
+  </div>
+  <div class="form-group">
+    <label>Telefone</label>
+    <input id="phone" type="tel" placeholder="+55 (11) 99999-9999">
+  </div>
+  <div class="form-group">
+    <label>Localização</label>
+    <input id="location" type="text" placeholder="Sua cidade">
+  </div>
+  <div class="form-group">
+    <label>Site</label>
+    <input id="website" type="url" placeholder="https://seusite.com">
+  </div>
+
+  <div class="section-divider"></div>
+  <div class="section-label">Visibilidade</div>
+
+  <div class="toggle-item">
+    <div class="toggle-info">
+      <div class="toggle-label">Mostrar status online</div>
+      <div class="toggle-desc">Outros podem ver quando você está online</div>
+    </div>
+    <div class="toggle on" id="toggleOnline" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="toggle-item">
+    <div class="toggle-info">
+      <div class="toggle-label">Mostrar "visto por último"</div>
+      <div class="toggle-desc">Outros podem ver quando você esteve ativo</div>
+    </div>
+    <div class="toggle on" id="toggleLastSeen" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="toggle-item">
+    <div class="toggle-info">
+      <div class="toggle-label">Perfil público</div>
+      <div class="toggle-desc">Qualquer pessoa pode ver seu perfil</div>
+    </div>
+    <div class="toggle" id="togglePublic" onclick="this.classList.toggle('on')"></div>
+  </div>
+</form>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script>
+let newAvatarFile = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  if (!await App.requireAuth()) return;
+  const profile = App.currentProfile;
+  if (!profile) return;
+
+  document.getElementById('fullName').value = profile.full_name || '';
+  document.getElementById('username').value = profile.username || '';
+  document.getElementById('bio').value = profile.bio || '';
+  document.getElementById('phone').value = profile.phone || '';
+  document.getElementById('location').value = profile.location || '';
+  document.getElementById('website').value = profile.website || '';
+  document.getElementById('nameCount').textContent = (profile.full_name||'').length;
+  document.getElementById('bioCount').textContent = (profile.bio||'').length;
+
+  document.getElementById('fullName').addEventListener('input', e => document.getElementById('nameCount').textContent = e.target.value.length);
+
+  const av = document.getElementById('avatarPreview');
+  if (profile.avatar_url) {
+    av.innerHTML = `<img src="${profile.avatar_url}" alt=""><div class="avatar-overlay">📷</div>`;
+  } else {
+    document.getElementById('avatarInitial').textContent = (profile.full_name||'?')[0].toUpperCase();
+  }
+
+  if (profile.preferences) {
+    const p = typeof profile.preferences === 'string' ? JSON.parse(profile.preferences) : profile.preferences;
+    if (p.showOnline === false) document.getElementById('toggleOnline').classList.remove('on');
+    if (p.showLastSeen === false) document.getElementById('toggleLastSeen').classList.remove('on');
+    if (p.publicProfile) document.getElementById('togglePublic').classList.add('on');
+  }
+});
+
+function previewAvatar(input) {
+  const file = input.files[0]; if (!file) return;
+  newAvatarFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('avatarPreview').innerHTML = `<img src="${e.target.result}" alt=""><div class="avatar-overlay">📷</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  try {
+    let avatarUrl = App.currentProfile?.avatar_url;
+    if (newAvatarFile) avatarUrl = await App.uploadAvatar(newAvatarFile);
+
+    const updates = {
+      full_name: document.getElementById('fullName').value.trim(),
+      username: document.getElementById('username').value.trim().toLowerCase(),
+      bio: document.getElementById('bio').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      location: document.getElementById('location').value.trim(),
+      website: document.getElementById('website').value.trim(),
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+      preferences: JSON.stringify({
+        showOnline: document.getElementById('toggleOnline').classList.contains('on'),
+        showLastSeen: document.getElementById('toggleLastSeen').classList.contains('on'),
+        publicProfile: document.getElementById('togglePublic').classList.contains('on'),
+      })
+    };
+
+    const { error } = await window.supabaseClient.from('profiles').update(updates).eq('id', App.currentUser.id);
+    if (error) throw error;
+    showToast('Perfil atualizado!', true);
+    setTimeout(() => window.location.href = 'perfil.html', 1200);
+  } catch(e) {
+    showToast(e.message || 'Erro ao salvar', false);
+  }
+  btn.disabled = false; btn.textContent = 'Salvar';
+}
+
+function showToast(msg, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'var(--online)' : '#f87171';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

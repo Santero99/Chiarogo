@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ChiaraGo</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a1a; --bg2: #0f0f2a; --surface: #13132a; --surface2: #1a1a35;
+    --border: rgba(124,58,237,0.2); --border2: rgba(124,58,237,0.4);
+    --primary: #7c3aed; --primary-light: #9d5cf8; --primary-dark: #5b21b6;
+    --accent: #f472b6; --accent2: #38bdf8;
+    --text: #f0f0ff; --text2: #a0a0c0; --text3: #606080;
+    --online: #22c55e; --shadow: 0 8px 32px rgba(124,58,237,0.3);
+    --radius: 16px; --radius-sm: 8px; --radius-full: 9999px;
+    --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; overflow-x:hidden; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--surface2); color:var(--text); padding:12px 24px; border-radius:var(--radius-full);
+    font-size:14px; opacity:0; transition:all .3s; z-index:9999; white-space:nowrap;
+    border:1px solid var(--border2); box-shadow:var(--shadow); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast-success { border-color:var(--online); }
+  .toast-error { border-color:var(--accent); }
+
+  /* Nav bottom */
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--surface);
+    border-top:1px solid var(--border); display:flex; justify-content:space-around;
+    padding:8px 0 max(8px,env(safe-area-inset-bottom)); z-index:100; backdrop-filter:blur(20px); }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:4px 12px; cursor:pointer; color:var(--text3); transition:color .2s; text-decoration:none; }
+  .nav-item.active, .nav-item:hover { color:var(--primary-light); }
+  .nav-item svg { width:24px; height:24px; }
+  .nav-item span { font-size:10px; font-weight:500; }
+  .nav-item-wrap { position:relative; }
+  .notif-badge { position:absolute; top:-4px; right:-4px; background:var(--accent);
+    color:#fff; font-size:9px; font-weight:700; min-width:16px; height:16px;
+    border-radius:var(--radius-full); display:none; align-items:center; justify-content:center;
+    padding:0 4px; border:2px solid var(--bg); }
+
+  /* Header */
+  .header { position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--border);
+    padding:12px 16px 12px max(16px,env(safe-area-inset-left));
+    display:flex; align-items:center; gap:12px; z-index:50; backdrop-filter:blur(20px); }
+  .header-logo { font-family:var(--font-head); font-size:22px; font-weight:800;
+    background:linear-gradient(135deg,var(--primary-light),var(--accent)); -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent; background-clip:text; }
+  .header-back { color:var(--text2); cursor:pointer; display:flex; align-items:center; gap:6px; text-decoration:none; }
+  .header-title { font-family:var(--font-head); font-size:18px; font-weight:700; flex:1; }
+  .header-action { color:var(--text2); cursor:pointer; display:flex; align-items:center;
+    padding:6px; border-radius:var(--radius-sm); transition:background .2s; }
+  .header-action:hover { background:var(--surface2); }
+
+  /* Conversations list */
+  .page { padding:0 0 80px; }
+  .search-bar { padding:12px 16px; position:sticky; top:57px; background:var(--surface); z-index:40; }
+  .search-input { width:100%; background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-full); padding:10px 16px 10px 40px; color:var(--text);
+    font-family:var(--font-body); font-size:14px; outline:none; position:relative; }
+  .search-input::placeholder { color:var(--text3); }
+  .search-wrap { position:relative; }
+  .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text3); width:18px; height:18px; }
+
+  .conv-list { list-style:none; }
+  .conv-item { display:flex; align-items:center; gap:12px; padding:12px 16px;
+    cursor:pointer; transition:background .2s; border-bottom:1px solid rgba(255,255,255,.03); text-decoration:none; }
+  .conv-item:hover, .conv-item:active { background:var(--surface); }
+  .avatar { position:relative; flex-shrink:0; }
+  .avatar-img { width:50px; height:50px; border-radius:50%; object-fit:cover;
+    background:linear-gradient(135deg,var(--primary),var(--accent)); display:flex; align-items:center;
+    justify-content:center; font-family:var(--font-head); font-weight:700; font-size:18px; color:#fff; }
+  .avatar-img img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+  .avatar-online { position:absolute; bottom:2px; right:2px; width:12px; height:12px;
+    background:var(--online); border-radius:50%; border:2px solid var(--bg); }
+  .conv-info { flex:1; min-width:0; }
+  .conv-name { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .conv-preview { color:var(--text2); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  .conv-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+  .conv-time { font-size:11px; color:var(--text3); }
+  .conv-unread { background:var(--primary); color:#fff; font-size:11px; font-weight:700;
+    min-width:20px; height:20px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; padding:0 6px; }
+
+  .fab { position:fixed; bottom:88px; right:16px; width:56px; height:56px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-light)); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 4px 24px rgba(124,58,237,.5); transition:transform .2s; z-index:99; }
+  .fab:hover { transform:scale(1.05); }
+  .fab svg { width:24px; height:24px; color:#fff; }
+
+  /* Empty state */
+  .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:60px 24px; gap:16px; text-align:center; }
+  .empty-state-icon { font-size:64px; opacity:.4; }
+  .empty-state h3 { font-family:var(--font-head); font-size:20px; font-weight:700; }
+  .empty-state p { color:var(--text2); font-size:14px; max-width:280px; line-height:1.6; }
+
+  /* Section headers */
+  .section-header { padding:12px 16px 6px; color:var(--text3); font-size:12px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.08em; }
+
+  /* Loading */
+  .loading-dots { display:flex; gap:6px; justify-content:center; padding:24px; }
+  .dot { width:8px; height:8px; background:var(--primary); border-radius:50%;
+    animation:bounce .6s infinite alternate; }
+  .dot:nth-child(2) { animation-delay:.2s; }
+  .dot:nth-child(3) { animation-delay:.4s; }
+  @keyframes bounce { to { transform:translateY(-8px); opacity:.4; } }
+
+  @media (min-width:768px) {
+    body { display:flex; max-width:1200px; margin:0 auto; }
+    .sidebar { width:360px; border-right:1px solid var(--border); flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+    .main-area { flex:1; }
+    .bottom-nav { width:360px; }
+  }
+</style>
+</head>
+<body>
+<div class="sidebar" id="sidebar">
+  <header class="header">
+    <span class="header-logo">ChiaraGo</span>
+    <div style="flex:1"></div>
+    <a href="notificacoes.html" class="header-action">
+      <div class="nav-item-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="notif-badge">0</span>
+      </div>
+    </a>
+    <a href="perfil.html" class="header-action">
+      <div class="avatar-img" id="headerAvatar" style="width:32px;height:32px;font-size:13px"></div>
+    </a>
+  </header>
+
+  <div class="search-bar">
+    <div class="search-wrap">
+      <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" placeholder="Pesquisar conversas..." type="text">
+    </div>
+  </div>
+
+  <div class="section-header">Recentes</div>
+  <div id="loadingConvs" class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <ul class="conv-list" id="convList"></ul>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-state-icon">💬</div>
+    <h3>Nenhuma conversa</h3>
+    <p>Toque no botão abaixo para iniciar uma conversa com alguém.</p>
+  </div>
+
+  <a href="chat.html" class="fab" id="newChatBtn" title="Nova Conversa">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+  </a>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span>Chats</span>
+    </a>
+    <a href="status.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/></svg>
+      <span>Status</span>
+    </a>
+    <a href="contatos.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span>Contatos</span>
+    </a>
+    <div class="nav-item-wrap">
+      <a href="notificacoes.html" class="nav-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span>Alertas</span>
+      </a>
+      <span class="notif-badge">0</span>
+    </div>
+    <a href="configuracoes.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Config.</span>
+    </a>
+  </nav>
+</div>
+
+<main class="main-area" id="mainArea">
+  <div class="empty-state" style="padding-top:120px; display:none" id="mainEmpty">
+    <div style="font-size:80px">✨</div>
+    <h3>Bem-vindo ao ChiaraGo</h3>
+    <p>Selecione uma conversa ou inicie uma nova para começar.</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+<script src="notificacoes.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  await App.init();
+  const auth = await App.requireAuth();
+  if (!auth) return;
+
+  if (window.innerWidth >= 768) document.getElementById('mainEmpty').style.display = 'flex';
+
+  // Load profile in header
+  const profile = App.currentProfile;
+  const ha = document.getElementById('headerAvatar');
+  if (profile?.avatar_url) ha.innerHTML = `<img src="${profile.avatar_url}" alt="">`;
+  else ha.textContent = (profile?.full_name || 'U')[0].toUpperCase();
+
+  // Notifications
+  await Notificacoes.init();
+
+  // Load conversations
+  await loadConversations();
+
+  // Search
+  document.getElementById('searchInput').addEventListener('input', async (e) => {
+    await loadConversations(e.target.value);
+  });
+});
+
+async function loadConversations(search = '') {
+  const loading = document.getElementById('loadingConvs');
+  const list = document.getElementById('convList');
+  const empty = document.getElementById('emptyState');
+  loading.style.display = 'flex';
+  list.innerHTML = '';
+
+  try {
+    let q = window.supabaseClient
+      .from('conversations')
+      .select(`id, updated_at, messages(content, created_at, sender_id, is_read),
+        conversation_participants!inner(user_id, profiles(id, username, full_name, avatar_url, is_online))`)
+      .eq('conversation_participants.user_id', App.currentUser.id)
+      .order('updated_at', { ascending: false });
+
+    const { data, error } = await q;
+    loading.style.display = 'none';
+
+    if (error || !data || data.length === 0) {
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+    const filtered = search ? data.filter(c => {
+      const other = c.conversation_participants?.find(p => p.user_id !== App.currentUser.id);
+      const name = other?.profiles?.full_name || '';
+      return name.toLowerCase().includes(search.toLowerCase());
+    }) : data;
+
+    filtered.forEach(conv => {
+      const participants = conv.conversation_participants || [];
+      const other = participants.find(p => p.user_id !== App.currentUser.id);
+      if (!other) return;
+      const p = other.profiles;
+      const lastMsg = conv.messages?.slice(-1)[0];
+      const unread = (conv.messages || []).filter(m => !m.is_read && m.sender_id !== App.currentUser.id).length;
+
+      const li = document.createElement('a');
+      li.href = `chat.html?id=${conv.id}`;
+      li.className = 'conv-item';
+      li.innerHTML = `
+        <div class="avatar">
+          <div class="avatar-img">
+            ${p?.avatar_url ? `<img src="${p.avatar_url}" alt="">` : (p?.full_name || 'U')[0].toUpperCase()}
+          </div>
+          ${p?.is_online ? '<div class="avatar-online"></div>' : ''}
+        </div>
+        <div class="conv-info">
+          <div class="conv-name">${p?.full_name || p?.username || 'Usuário'}</div>
+          <div class="conv-preview">${lastMsg?.content || 'Inicie a conversa'}</div>
+        </div>
+        <div class="conv-meta">
+          <span class="conv-time">${lastMsg ? App.formatTime(lastMsg.created_at) : ''}</span>
+          ${unread > 0 ? `<span class="conv-unread">${unread}</span>` : ''}
+        </div>`;
+      list.appendChild(li);
+    });
+  } catch(e) {
+    loading.style.display = 'none';
+    console.error(e);
+  }
+}
+</script>
+</body>
+</html>
